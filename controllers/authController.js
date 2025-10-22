@@ -1,33 +1,32 @@
 const supabase = require('../utils/supabaseClient');
+const User = require('../models/authModel');
 const twilio = require('twilio');
 
 // Register with Supabase
 const registerUser = async (req, res) => {
-    const { email, password, username } = req.body;
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Please enter all fields' });
-    }
-
     try {
-        // Supabase signup
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { username }, // metadata
-            },
-        });
+        const { email, password, username, MobileNum, profilePicture, address } = req.body;
+        console.log("Request Body:", req.body);
 
-        if (error) return res.status(400).json({ message: error.message });
+        if (!username || !email || !password || !MobileNum) {
+            return res.status(400).json({ message: 'Missing required fields: username, email, password, and MobileNum are mandatory.' });
+        }
+
+        const newUser = await User.create({
+            username,
+            email,
+            MobileNum,
+            password,
+            address: [address]
+        });
 
         res.status(201).json({
-            user: data.user,
-            message: 'User registered via Supabase!',
+            user: newUser,
+            message: 'User registered successfully and data stored in MongoDB. 🎉',
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error during registration' });
+        res.status(500).json({ message: 'Internal server error during registration.', error: err.message });
+        console.log(err);
     }
 };
 
@@ -82,5 +81,4 @@ const loginWithOTP = async (req, res) => {
     }
 }
 
-
-module.exports = { registerUser, loginUser, loginWithOTP };
+module.exports = { registerUser, loginUser, loginWithOTP }; 

@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const addressSchema = new mongoose.Schema({
     street: { type: String },
+    subDistrict: { type: String },
+    district: { type: String },
     city: { type: String },
     state: { type: String },
     zipCode: { type: String },
