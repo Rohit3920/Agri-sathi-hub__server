@@ -23,6 +23,10 @@ app.use(cors(corsOptions));
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// machine rental routes
+const machineRentalRoutes = require('./routes/machineRentalRoutes');
+app.use('/api/machine-rental', machineRentalRoutes);
+
 app.get('/', (req, res) => {
     res.send('Final year project (Agri sathi hub) website backend running...');
 });
