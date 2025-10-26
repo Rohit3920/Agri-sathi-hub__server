@@ -6,7 +6,7 @@
     router.post('/rent-machine', RentMachine);
     router.post('/update-rental-status', UpdateRentalStatus);
 
-    router.put('/update-machine-details', UpdateMachineDetails);
+    router.put('/update-machine-details/:machineId', UpdateMachineDetails);
 
     router.delete('/remove-machine', RemoveMachine);
 

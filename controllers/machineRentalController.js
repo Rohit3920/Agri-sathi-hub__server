@@ -131,7 +131,8 @@ async function UpdateRentalStatus(req, res) {
 // 4. Update machine details
 async function UpdateMachineDetails(req, res) {
     try {
-        const { machineId, updates } = req.body;
+        const { updates } = req.body;
+        const { machineId } = req.params;
 
         const updatedMachine = await machineRental.findByIdAndUpdate(
             machineId,
@@ -193,7 +194,7 @@ async function ListMachines(req, res) {
 async function GetRentalHistory(req, res) {
     try {
         const rentedMachines = await machineRental.find({ machineStatus: "rented" })
-            .populate("machineOwner", "username email");
+            .populate("machineOwner", "username email MobileNum");
 
         res.status(200).json({
             success: true,
@@ -210,7 +211,7 @@ async function GetRentalHistory(req, res) {
 async function GetAvailableMachines(req, res) {
     try {
         const availableMachines = await machineRental.find({ machineStatus: "available" })
-            .populate("machineOwner", "username email");
+            .populate("machineOwner", "username email MobileNum");
 
         res.status(200).json({
             success: true,
@@ -242,7 +243,7 @@ async function GetMachineById(req, res) {
     try {
         const { machineId } = req.params;
 
-        const machine = await machineRental.findById(machineId).populate("machineOwner", "username email");
+        const machine = await machineRental.findById(machineId).populate("machineOwner");
         if (!machine)
             return res.status(404).json({ success: false, message: "Machine not found" });
 
