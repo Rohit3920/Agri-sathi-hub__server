@@ -16,12 +16,6 @@ const addressSchema = new mongoose.Schema({
 
 const UserSchema = new mongoose.Schema(
     {
-        UserMode : {
-            type : String,
-            enum : ['admin', 'farmer', 'servicer'],
-            required : [true, "Please specify user mode"]
-        },
-
         username: {
             type: String,
             unique: true,
@@ -41,6 +35,9 @@ const UserSchema = new mongoose.Schema(
             required: [true, "Please add an email"],
             match: [/^.+@.+\..+$/, "Please enter a valid email"]
         },
+
+        verified: Boolean,
+
         MobileNum: {
             type: Number,
             unique: true,
