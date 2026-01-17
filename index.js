@@ -23,6 +23,10 @@ app.use(cors(corsOptions));
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// upload routes
+const uploadRoutes = require('./routes/uploadRoutes');
+app.use('/api/file', uploadRoutes);
+
 // machine rental routes
 const machineRentalRoutes = require('./routes/machineRentalRoutes');
 app.use('/api/machine-rental', machineRentalRoutes);

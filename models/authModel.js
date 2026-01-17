@@ -35,6 +35,9 @@ const UserSchema = new mongoose.Schema(
             required: [true, "Please add an email"],
             match: [/^.+@.+\..+$/, "Please enter a valid email"]
         },
+
+        verified: Boolean,
+
         MobileNum: {
             type: Number,
             unique: true,
