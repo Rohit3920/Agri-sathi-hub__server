@@ -16,6 +16,12 @@ const addressSchema = new mongoose.Schema({
 
 const UserSchema = new mongoose.Schema(
     {
+        userMode:{
+            type: String,
+            enum: ['farmer', 'servicer', 'worker'],
+            required: [true, "Please specify user mode"]
+        },
+
         username: {
             type: String,
             unique: true,

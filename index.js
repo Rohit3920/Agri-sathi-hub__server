@@ -1,40 +1,77 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
-// database connection
 require('./utils/dbConnect');
+const Message = require('./models/messageModel');
 
-
-var corsOptions = {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    methods: ["POST", "GET", "DELETE", "PUT"],
-    credentials: true
-};
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors({
+    origin: CLIENT_URL,
+    methods: ["POST", "GET", "DELETE", "PUT"],
+    credentials: true
+}));
 
+const io = new Server(server, {
+    cors: {
+        origin: CLIENT_URL,
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
 
-// routes
-// auth routes
 const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
-
-// upload routes
 const uploadRoutes = require('./routes/uploadRoutes');
-app.use('/api/file', uploadRoutes);
-
-// machine rental routes
+const messageRoutes = require('./routes/messageRoutes');
 const machineRentalRoutes = require('./routes/machineRentalRoutes');
+const likeRoutes = require('./routes/likeRoutes');
+// const searchRoutes = require('./routes/searchRoutes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/file', uploadRoutes);
+app.use('/api/messages', messageRoutes);
 app.use('/api/machine-rental', machineRentalRoutes);
+app.use('/api/like', likeRoutes)
+// app.use('/api/search', searchRoutes)
+
+io.on('connection', (socket) => {
+    socket.on('joinRoom', (userId) => {
+        socket.join(userId);
+    });
+
+    socket.on('sendMessage', async (data) => {
+        const { senderId, receiverId, content } = data;
+        try {
+            const newMessage = new Message({
+                sender: senderId,
+                receiver: receiverId,
+                content: content
+            });
+            await newMessage.save();
+
+            io.to(senderId).emit('receiveMessage', newMessage);
+            io.to(receiverId).emit('receiveMessage', newMessage);
+        } catch (error) {
+            socket.emit('messageError', 'Failed to send message');
+        }
+    });
+
+    socket.on('disconnect', () => {
+    });
+});
 
 app.get('/', (req, res) => {
     res.send('Final year project (Agri sathi hub) website backend running...');
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Agri sathi hub - Server running on port ${PORT}`);
 });

@@ -6,7 +6,7 @@ const twilio = require('twilio');
 // Register with mongoDB
 const registerUser = async (req, res) => {
     try {
-        const { email, password, username, MobileNum, profilePicture, address } = req.body;
+        const { userMode, email, password, username, MobileNum, profilePicture, address } = req.body;
         console.log("Request Body:", req.body);
 
         if (!username || !email || !password || !MobileNum) {
@@ -34,6 +34,7 @@ if (existingUser) {
 }
 
         const newUser = await User.create({
+            userMode,
             username,
             email,
             MobileNum,
