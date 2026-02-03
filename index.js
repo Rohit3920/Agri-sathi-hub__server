@@ -33,6 +33,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const machineRentalRoutes = require('./routes/machineRentalRoutes');
 const likeRoutes = require('./routes/likeRoutes');
+const laborRoutes = require('./routes/laborRoutes');
 // const searchRoutes = require('./routes/searchRoutes');
 
 app.use('/api/auth', authRoutes);
@@ -40,6 +41,7 @@ app.use('/api/file', uploadRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/machine-rental', machineRentalRoutes);
 app.use('/api/like', likeRoutes)
+app.use('/api/labor', laborRoutes);
 // app.use('/api/search', searchRoutes)
 
 io.on('connection', (socket) => {

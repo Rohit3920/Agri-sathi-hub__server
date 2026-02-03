@@ -13,25 +13,25 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields: username, email, password, and MobileNum are mandatory.' });
         }
 
-const existingUser = await User.findOne({
-    $or: [
-        { email },
-        { MobileNum },
-        { username }
-    ]
-});
+        const existingUser = await User.findOne({
+            $or: [
+                { email },
+                { MobileNum },
+                { username }
+            ]
+        });
 
-if (existingUser) {
-    if (existingUser.email === email) {
-        return res.status(400).json({ message: 'Email already exists' });
-    }
-    if (existingUser.MobileNum === MobileNum) {
-        return res.status(400).json({ message: 'Mobile number already exists' });
-    }
-    if (existingUser.username === username) {
-        return res.status(400).json({ message: 'Username already exists' });
-    }
-}
+        if (existingUser) {
+            if (existingUser.email === email) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
+            if (existingUser.MobileNum === MobileNum) {
+                return res.status(400).json({ message: 'Mobile number already exists' });
+            }
+            if (existingUser.username === username) {
+                return res.status(400).json({ message: 'Username already exists' });
+            }
+        }
 
         const newUser = await User.create({
             userMode,
@@ -65,16 +65,16 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.comparePassword(password))) {
-                    res.status(200).json({
-                        _id: user._id,
-                        username: user.username,
-                        email: user.email,
-                        token: generateToken(user._id),
-                        message: 'Logged in successfully!'
-                    });
-                } else {
-                    res.status(401).json({ message: 'Invalid credentials (email or password)' });
-                }
+            res.status(200).json({
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                token: generateToken(user._id),
+                message: 'Logged in successfully!'
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid credentials (email or password)' });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error during login' });
@@ -168,4 +168,16 @@ const updateUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, loginWithOTP, getUserByID, getAllUsers, deleteUser, updateUser };
+//getWorkers
+
+const getWorkers = async (req, res) => {
+    try {
+        const workers = await User.find({ userMode: 'worker' });
+        res.status(200).json(workers);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error while fetching workers' });
+    }
+};
+
+module.exports = { registerUser, loginUser, loginWithOTP, getUserByID, getAllUsers, deleteUser, updateUser, getWorkers };
