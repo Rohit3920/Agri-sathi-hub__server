@@ -4,6 +4,10 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 
+// this code will removed after deploy the app
+const dns = require('node:dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -34,6 +38,7 @@ const messageRoutes = require('./routes/messageRoutes');
 const machineRentalRoutes = require('./routes/machineRentalRoutes');
 const likeRoutes = require('./routes/likeRoutes');
 const laborRoutes = require('./routes/laborRoutes');
+const chatbotsRoutes = require("./routes/chatbotsRoutes")
 // const searchRoutes = require('./routes/searchRoutes');
 
 app.use('/api/auth', authRoutes);
@@ -42,6 +47,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/machine-rental', machineRentalRoutes);
 app.use('/api/like', likeRoutes)
 app.use('/api/labor', laborRoutes);
+app.use('/api/chat-bot', chatbotsRoutes);
 // app.use('/api/search', searchRoutes)
 
 io.on('connection', (socket) => {
