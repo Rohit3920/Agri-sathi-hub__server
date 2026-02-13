@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 
 const workerGroupSchema = new mongoose.Schema({
+    groupImage : {
+        type: String
+    },
     groupName: {
         type: String,
         required: true
@@ -18,6 +21,11 @@ const workerGroupSchema = new mongoose.Schema({
     }],
 
     skills: [String],
+
+    availability: {
+        type: Boolean,
+        default: true
+    },
 
     groupWagePerDay: {
         type: Number,

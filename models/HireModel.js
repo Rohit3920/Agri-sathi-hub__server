@@ -33,6 +33,11 @@ const hireSchema = new mongoose.Schema({
         required: true
     },
 
+    endDate: {
+        type: Date,
+        required: true
+    },
+
     days: {
         type: Number,
         required: true

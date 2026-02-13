@@ -9,24 +9,25 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const uploadProfileImage = async (req, res) => {
+
+const uploadImageToBucket = async (req, res, bucketName, successMessage) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded.' });
         }
 
         const file = req.file;
-        const bucketName = 'profiles';
 
-        console.log('Attempting to upload file to Supabase:', file.originalname);
+        console.log(`Uploading to bucket: ${bucketName}`);
+        console.log('File name:', file.originalname);
         console.log('File mimetype:', file.mimetype);
-        console.log('File size:', file.size, 'bytes');
+        console.log('File size:', file.size);
 
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
         const filePath = `public/${fileName}`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from(bucketName)
             .upload(filePath, file.buffer, {
                 contentType: file.mimetype,
@@ -42,22 +43,70 @@ const uploadProfileImage = async (req, res) => {
             .from(bucketName)
             .getPublicUrl(filePath);
 
-        if (publicUrlData && publicUrlData.publicUrl) {
-            return res.status(200).json({
-                message: 'Image uploaded successfully!',
-                imageUrl: publicUrlData.publicUrl
+        if (!publicUrlData || !publicUrlData.publicUrl) {
+            return res.status(500).json({
+                message: 'Image uploaded but failed to retrieve public URL.'
             });
-        } else {
-            console.error('Supabase getPublicUrl did not return a public URL.');
-            return res.status(500).json({ message: 'Image uploaded but failed to retrieve public URL.' });
         }
+
+        return res.status(200).json({
+            message: successMessage,
+            imageUrl: publicUrlData.publicUrl
+        });
 
     } catch (error) {
         console.error('Error uploading image:', error);
-        res.status(500).json({ error: error.message || 'Internal server error during image upload.' });
+        return res.status(500).json({
+            error: error.message || 'Internal server error during image upload.'
+        });
     }
 };
 
+
+// 1️⃣ Profile Image
+const uploadProfileImage = (req, res) => {
+    return uploadImageToBucket(
+        req,
+        res,
+        'profiles',
+        'Profile image uploaded successfully!'
+    );
+};
+
+// 2️⃣ Hire Worker Image
+const uploadHireWorkerImage = (req, res) => {
+    return uploadImageToBucket(
+        req,
+        res,
+        'hireWorker',
+        'Hire worker image uploaded successfully!'
+    );
+};
+
+// 3️⃣ Hire Worker Group Image
+const uploadHireWorkerGroupImage = (req, res) => {
+    return uploadImageToBucket(
+        req,
+        res,
+        'hireWorkerGroup',
+        'Hire worker group image uploaded successfully!'
+    );
+};
+
+// 4️⃣ Machine Rental Image
+const uploadMachineRentalImage = (req, res) => {
+    return uploadImageToBucket(
+        req,
+        res,
+        'MachineRental',
+        'Machine rental image uploaded successfully!'
+    );
+};
+
+
 module.exports = {
-    uploadProfileImage
+    uploadProfileImage,
+    uploadHireWorkerImage,
+    uploadHireWorkerGroupImage,
+    uploadMachineRentalImage
 };

@@ -18,6 +18,16 @@ const workerProfileSchema = new mongoose.Schema({
         default: 0
     },
 
+    machineStatus: {
+                type: String,
+                enum: [
+                    "available",
+                    "unavailable",
+                    "working",
+                ],
+                default :"available"
+            },
+
     dailyWage: {
         type: Number,
         required: true

@@ -8,6 +8,7 @@ const {
     getWorkerGroups,
     createHireRequest,
     getHireRequests,
+    getHireById,
     updateHireStatus,
     getGroupById,
     getWorkerById
@@ -27,6 +28,7 @@ router.get("/worker-group/:id", getGroupById);
 
 
 /* HIRE */
+router.get("/hire/:id", getHireById);
 router.post("/hire", createHireRequest);
 router.get("/hire", getHireRequests);
 router.put("/hire/:id/status", updateHireStatus);

@@ -3,6 +3,23 @@ const WorkerProfile = require("../models/WorkerProfileModel");
 const WorkerGroup = require("../models/WorkerGroupModel");
 const Hire = require("../models/HireModel");
 
+exports.getHireById = async (req, res) => {
+    try {
+        const hire = await Hire.findById(req.params.id)
+            .populate("farmerId", "username email")
+            .populate("workerId", "username email")
+            .populate("groupId");
+
+        if (!hire) {
+            return res.status(404).json({ message: "Hire not found" });
+        }
+
+        res.json(hire);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // create or update worker profile
 exports.upsertWorkerProfile = async (req, res) => {
     try {
@@ -28,7 +45,7 @@ exports.upsertWorkerProfile = async (req, res) => {
 exports.getAvailableWorkers = async (req, res) => {
     try {
         const workers = await WorkerProfile.find({ availability: true })
-            .populate("userId", "username MobileNum address");
+            .populate("userId", "username MobileNum address profilePicture");
 
         res.json(workers);
     } catch (error) {
@@ -87,7 +104,6 @@ exports.getWorkerGroups = async (req, res) => {
     }
 };
 
-
 exports.getGroupById = async (req, res) => {
     try {
         const group = await WorkerGroup.findById(req.params.id)
@@ -123,7 +139,16 @@ exports.createHireRequest = async (req, res) => {
             return res.status(403).json({ message: "Only farmers can hire workers" });
         }
 
-        const hire = await Hire.create(req.body);
+        const start = new Date(req.body.startDate);
+        const end = new Date(req.body.endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const hire = await Hire.create({
+            ...req.body,
+            days: diffDays
+        });
+
         res.status(201).json(hire);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -151,13 +176,36 @@ exports.getHireRequests = async (req, res) => {
 // update hire status (accept / reject / complete)
 exports.updateHireStatus = async (req, res) => {
     try {
-        const hire = await Hire.findByIdAndUpdate(
-            req.params.id,
-            { status: req.body.status },
-            { new: true }
-        );
+        const { status } = req.body;
 
-        res.json(hire);
+        const hire = await Hire.findById(req.params.id);
+        if (!hire) {
+            return res.status(404).json({ message: "Hire not found" });
+        }
+
+        // Example: assume role is passed from frontend
+        const userRole = req.body.userRole;
+
+        if (userRole === "servicer") {
+            if (!["accepted", "rejected"].includes(status)) {
+                return res.status(403).json({ message: "Servicer not allowed" });
+            }
+        }
+
+        if (userRole === "farmer") {
+            if (!["rejected", "completed"].includes(status)) {
+                return res.status(403).json({ message: "Farmer not allowed" });
+            }
+        }
+
+        hire.status = status;
+        await hire.save();
+
+        res.json({
+            message: "Status updated successfully",
+            hire
+        });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
