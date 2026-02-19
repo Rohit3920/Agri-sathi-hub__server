@@ -4,25 +4,8 @@ const orderMachineRentalSchema = require("../models/orderMachineRentalModel");
 
 // 1. Add a new machine
 async function AddMachine(req, res) {
-    const {
-        machineName,
-        machineType,
-        machineRegistationNumber,
-        machineModel,
-        description,
-        machineImage,
-        machineParts,
-        machineWorkingArea,
-        machineWorkingHours,
-        rentalPricePerHour,
-        availabilityStartDate,
-        availabilityEndDate,
-        location,
-        machineOwner,
-    } = req.body;
-
     try {
-        const newMachine = await machineRental.create({
+        const {
             machineName,
             machineType,
             machineRegistationNumber,
@@ -35,22 +18,73 @@ async function AddMachine(req, res) {
             rentalPricePerHour,
             availabilityStartDate,
             availabilityEndDate,
-            location,
+            city,
+            state,
+            country,
+            longitude,
+            latitude,
             machineOwner,
-        });
+        } = req.body;
 
-        await newMachine.save();
+        // ✅ Validate coordinates
+        if (
+            longitude === undefined ||
+            latitude === undefined ||
+            isNaN(longitude) ||
+            isNaN(latitude)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid machine location coordinates are required."
+            });
+        }
+
+        const newMachine = await MachineRental.create({
+
+            machineName,
+            machineType,
+            machineRegistationNumber,
+            machineModel,
+            description,
+            machineImage,
+            machineParts,
+            machineWorkingArea,
+            machineWorkingHours,
+            rentalPricePerHour,
+            availabilityStartDate,
+            availabilityEndDate,
+            machineOwner,
+
+            // ✅ Proper GeoJSON
+            location: {
+                city: city || "",
+                state: state || "",
+                country: country || "INDIA",
+                geo: {
+                    type: "Point",
+                    coordinates: [
+                        parseFloat(longitude),
+                        parseFloat(latitude)
+                    ]
+                }
+            }
+
+        });
 
         res.status(201).json({
             success: true,
-            message: "Machine added successfully",
-            data: newMachine,
+            message: "Machine added successfully 🚜",
+            data: newMachine
         });
+
     } catch (error) {
-        console.error("Error in AddMachine:", error);
-        res.status(500).json({ success: false, message: error.message });
+        console.error("AddMachine Error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-};
+}
 
 // 2. Rent a machine
 async function RentMachine(req, res) {

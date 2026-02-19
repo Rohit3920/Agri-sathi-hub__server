@@ -6,51 +6,81 @@ const twilio = require('twilio');
 // Register with mongoDB
 const registerUser = async (req, res) => {
     try {
-        const { userMode, email, password, username, MobileNum, profilePicture, address } = req.body;
-        console.log("Request Body:", req.body);
+        const {
+            userMode,
+            email,
+            password,
+            username,
+            MobileNum,
+            profilePicture,
+            address,
+            longitude,
+            latitude
+        } = req.body;
 
         if (!username || !email || !password || !MobileNum) {
-            return res.status(400).json({ message: 'Missing required fields: username, email, password, and MobileNum are mandatory.' });
+            return res.status(400).json({
+                message: 'Missing required fields: username, email, password, and MobileNum are mandatory.'
+            });
         }
 
         const existingUser = await User.findOne({
-            $or: [
-                { email },
-                { MobileNum },
-                { username }
-            ]
+            $or: [{ email }, { MobileNum }, { username }]
         });
 
         if (existingUser) {
-            if (existingUser.email === email) {
+            if (existingUser.email === email)
                 return res.status(400).json({ message: 'Email already exists' });
-            }
-            if (existingUser.MobileNum === MobileNum) {
+
+            if (existingUser.MobileNum === MobileNum)
                 return res.status(400).json({ message: 'Mobile number already exists' });
-            }
-            if (existingUser.username === username) {
+
+            if (existingUser.username === username)
                 return res.status(400).json({ message: 'Username already exists' });
-            }
         }
 
-        const newUser = await User.create({
+        // ✅ Proper GeoJSON Location Handling
+        let userData = {
             userMode,
             username,
             email,
             MobileNum,
             password,
-            address: [address]
-        });
+            profilePicture,
+            address: address ? [address] : []
+        };
+
+        if (
+            longitude !== undefined &&
+            latitude !== undefined &&
+            !isNaN(longitude) &&
+            !isNaN(latitude)
+        ) {
+            userData.location = {
+                type: "Point",
+                coordinates: [
+                    parseFloat(longitude),
+                    parseFloat(latitude)
+                ]
+            };
+        }
+
+        const newUser = await User.create(userData);
 
         res.status(201).json({
             user: newUser,
-            message: 'User registered successfully and data stored in MongoDB. 🎉',
+            message: 'User registered successfully. 🎉',
         });
+
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error during registration.', error: err.message });
-        console.log(err);
+        console.error("Mongo Registration Error:", err);
+        res.status(500).json({
+            message: 'Internal server error.',
+            error: err.message
+        });
     }
 };
+
 
 
 // Login with MongoDB

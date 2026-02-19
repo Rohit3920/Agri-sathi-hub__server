@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+
 const addressSchema = new mongoose.Schema({
     street: { type: String },
     subDistrict: { type: String },
@@ -21,19 +22,16 @@ const UserSchema = new mongoose.Schema(
             enum: ['farmer', 'servicer', 'worker'],
             required: [true, "Please specify user mode"]
         },
-
         username: {
             type: String,
             unique: true,
             trim: true,
             required: [true, "Please add a username"]
         },
-
         profilePicture: {
             type: String,
             default: 'https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg',
         },
-
         email: {
             type: String,
             unique: true,
@@ -41,15 +39,11 @@ const UserSchema = new mongoose.Schema(
             required: [true, "Please add an email"],
             match: [/^.+@.+\..+$/, "Please enter a valid email"]
         },
-
-        verified: Boolean,
-
+        verified: { type: Boolean, default: false },
         MobileNum: {
             type: Number,
             unique: true,
-            required: [true, "Please add a mobile number"],
-            minlength: [10, "Mobile number must be at least 10 characters long"],
-            maxlength: [15, "Mobile number must be at most 15 characters long"]
+            required: [true, "Please add a mobile number"]
         },
         password: {
             type: String,
@@ -57,10 +51,19 @@ const UserSchema = new mongoose.Schema(
             minlength: [6, "Password must be at least 6 characters long"],
             select: false
         },
-
         isAvailable: {
             type: Boolean,
             default: true
+        },
+
+        location: {
+            type: {
+                type: String,
+                enum: ['Point']
+            },
+            coordinates: {
+                type: [Number]
+            }
         },
 
         address: [addressSchema],
@@ -73,6 +76,9 @@ const UserSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
 UserSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
@@ -82,8 +88,6 @@ UserSchema.pre("save", async function (next) {
     next();
 });
 
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
-};
+UserSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("User", UserSchema);
