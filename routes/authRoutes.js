@@ -1,10 +1,12 @@
 const express = require('express');
-const { registerUser, loginUser, loginWithOTP, getUserByID, getAllUsers, deleteUser, updateUser, getWorkers } = require('../controllers/authController');
+const { registerUser, loginUser, changeUserType, changePassword, getUserByID, getAllUsers, deleteUser, updateUser, getWorkers } = require('../controllers/authController');
 const { sendOtp, verifyOtp } = require('../controllers/otpController');
 const router = express.Router();
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/change-user-type', changeUserType)
+router.put("/change-password/:id", changePassword);
 router.get('/get-user/:id', getUserByID);
 router.get('/get-all-users', getAllUsers);
 router.delete('/delete-user/:id', deleteUser);

@@ -98,6 +98,7 @@ const loginUser = async (req, res) => {
             res.status(200).json({
                 _id: user._id,
                 username: user.username,
+                userMode: user.userMode,
                 email: user.email,
                 token: generateToken(user._id),
                 message: 'Logged in successfully!'
@@ -110,6 +111,95 @@ const loginUser = async (req, res) => {
         res.status(500).json({ message: 'Server error during login' });
     }
 };
+
+//  changeUserType
+const changeUserType = async (req, res) => {
+    try {
+        const { password, newMode, userId } = req.body;
+
+        // 1. Validate Input
+        const allowedModes = ['farmer', 'servicer', 'worker'];
+        if (!allowedModes.includes(newMode)) {
+            return res.status(400).json({ message: "Invalid user mode selected." });
+        }
+
+        // 2. Find User (ensure password is selected for comparison)
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // 3. Verify Password using your model's existing method
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Incorrect password. Mode change denied." });
+        }
+
+        // 4. Update User Type (ensure field name matches your Schema, e.g., 'userMode')
+        user.userMode = newMode;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: `User mode updated to ${newMode} successfully.`,
+            userMode: user.userMode
+        });
+
+    } catch (error) {
+        console.error("Change Mode Error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// changePassword
+const changePassword = async (req, res) => {
+    try {
+        // 404 Fix: Ensure we are checking params, then user object, then body
+        const userId = req.params.id || req.body.id;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        // 1️⃣ Validate input
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: "Missing required fields." });
+        }
+
+        // 2️⃣ Check new password match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: "Passwords do not match." });
+        }
+
+        // 3️⃣ Find user
+        const user = await User.findById(userId).select('+password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found in database." });
+        }
+
+        // 4️⃣ Verify current password
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Current password is incorrect." });
+        }
+
+        // 5️⃣ Update and save
+        user.password = newPassword; 
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Password changed successfully. 🎉"
+        });
+
+    } catch (error) {
+        console.error("Change Password Error:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
 
 // login with OTP (Twilio)
 const loginWithOTP = async (req, res) => {
@@ -210,4 +300,4 @@ const getWorkers = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, loginWithOTP, getUserByID, getAllUsers, deleteUser, updateUser, getWorkers };
+module.exports = { registerUser, loginUser, changeUserType, changePassword, loginWithOTP, getUserByID, getAllUsers, deleteUser, updateUser, getWorkers };

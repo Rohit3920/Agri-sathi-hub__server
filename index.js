@@ -20,7 +20,7 @@ const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 app.use(express.json());
 app.use(cors({
     origin: CLIENT_URL,
-    methods: ["POST", "GET", "DELETE", "PUT"],
+    methods: ["POST", "GET", "DELETE", "PUT", "PATCH"],
     credentials: true
 }));
 
