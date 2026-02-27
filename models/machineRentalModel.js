@@ -112,9 +112,6 @@ const machineRentalSchema = new mongoose.Schema(
             "unavailable",
             "rented",
             "under_maintenance",
-            "idle",
-            "reserved",
-            "out_of_service",
             "working"
         ],
         default: "available"

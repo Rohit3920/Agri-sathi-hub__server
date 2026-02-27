@@ -2,7 +2,7 @@ const machineRental = require("../models/machineRentalModel");
 const User = require("../models/authModel");
 const orderMachineRentalSchema = require("../models/orderMachineRentalModel");
 
-// 1. Add a new machine
+// ✅ Corrected Backend Controller
 async function AddMachine(req, res) {
     try {
         const {
@@ -18,57 +18,45 @@ async function AddMachine(req, res) {
             rentalPricePerHour,
             availabilityStartDate,
             availabilityEndDate,
-            city,
-            state,
-            country,
-            longitude,
-            latitude,
             machineOwner,
+            location // This contains state, city, latitude, longitude
         } = req.body;
 
-        // ✅ Validate coordinates
-        if (
-            longitude === undefined ||
-            latitude === undefined ||
-            isNaN(longitude) ||
-            isNaN(latitude)
-        ) {
+        // 1. Extract and Validate coordinates from the nested location object
+        const lat = parseFloat(location?.latitude);
+        const lng = parseFloat(location?.longitude);
+
+        if (isNaN(lat) || isNaN(lng)) {
             return res.status(400).json({
                 success: false,
-                message: "Valid machine location coordinates are required."
+                message: "Valid machine location coordinates (Latitude and Longitude) are required."
             });
         }
 
-        const newMachine = await MachineRental.create({
-
+        // 2. Create the document matching the Schema structure
+        const newMachine = await machineRental.create({
             machineName,
             machineType,
             machineRegistationNumber,
-            machineModel,
+            machineModel: machineModel || machineType, // Fallback if model isn't provided
             description,
             machineImage,
-            machineParts,
-            machineWorkingArea,
+            machineParts: Array.isArray(machineParts) ? machineParts : [machineParts],
+            machineWorkingArea: machineWorkingArea || location.state,
             machineWorkingHours,
             rentalPricePerHour,
             availabilityStartDate,
             availabilityEndDate,
             machineOwner,
-
-            // ✅ Proper GeoJSON
             location: {
-                city: city || "",
-                state: state || "",
-                country: country || "INDIA",
+                city: location.district || location.city || "",
+                state: location.state || "",
+                country: location.country || "INDIA",
                 geo: {
                     type: "Point",
-                    coordinates: [
-                        parseFloat(longitude),
-                        parseFloat(latitude)
-                    ]
+                    coordinates: [lng, lat] // [Longitude, Latitude]
                 }
             }
-
         });
 
         res.status(201).json({
