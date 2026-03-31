@@ -200,7 +200,7 @@ async function RemoveMachine(req, res) {
 // 6. List all machines
 async function ListMachines(req, res) {
     try {
-        const machines = await machineRental.find().populate("machineOwner", "username email MobileNum");
+        const machines = await machineRental.find().populate("machineOwner", "username email MobileNum address");
         res.status(200).json({
             success: true,
             count: machines.length,
@@ -216,7 +216,7 @@ async function ListMachines(req, res) {
 async function GetRentalHistory(req, res) {
     try {
         const rentedMachines = await machineRental.find({ machineStatus: "rented" })
-            .populate("machineOwner", "username email MobileNum");
+            .populate("machineOwner", "username email MobileNum address");
 
         res.status(200).json({
             success: true,
@@ -233,7 +233,7 @@ async function GetRentalHistory(req, res) {
 async function GetAvailableMachines(req, res) {
     try {
         const availableMachines = await machineRental.find({ machineStatus: "available" })
-            .populate("machineOwner", "username email MobileNum");
+            .populate("machineOwner", "username email MobileNum address");
 
         res.status(200).json({
             success: true,
