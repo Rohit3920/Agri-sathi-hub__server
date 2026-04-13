@@ -167,7 +167,6 @@ exports.getCropPesticides = async (req, res) => {
 
 
 // 🌾 Get Related Crops
-
 exports.getRelatedCrops = async (req, res) => {
 
     try {
@@ -218,12 +217,16 @@ exports.checkCropHealth = async (req, res) => {
         if (p < nutrients.p) issues.push("Phosphorus deficiency");
         if (k < nutrients.k) issues.push("Potassium deficiency");
 
+        if (n > nutrients.n) issues.push("Nitrogen excess");
+        if (p > nutrients.p) issues.push("Phosphorus excess");
+        if (k > nutrients.k) issues.push("Potassium excess");
+
         if (rainfall < climate.rainfall * 0.7) {
             issues.push("Low rainfall risk");
         }
 
         res.json({
-            status: issues.length ? "Risk" : "Healthy",
+            status: issues.length ? "under risk only" : "Healthy",
             issues
         });
 

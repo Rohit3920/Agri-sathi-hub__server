@@ -262,3 +262,78 @@ exports.deleteRental = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// 1. Get a specific hiring request by its ID
+exports.getRequestById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const request = await HireMachine.findById(id)
+            .populate("machineId")
+            .populate("farmerId", "username MobileNum profilePicture")
+            .populate("providerId", "username MobileNum location address");
+
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: "Hiring request not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: request
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error fetching request details",
+            error: error.message
+        });
+    }
+};
+
+// 2. Get all hiring requests in the system (Admin or Audit view)
+exports.getAllRequests = async (req, res) => {
+    try {
+        const requests = await HireMachine.find()
+            .populate("machineId", "title price")
+            .populate("farmerId", "username")
+            .populate("providerId", "username")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: requests.length,
+            data: requests
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error fetching all requests",
+            error: error.message
+        });
+    }
+};
+
+// 3. Delete all requests associated with a specific machine
+exports.deleteReqByMachine = async (req, res) => {
+    try {
+        const { machineId } = req.params;
+
+        // Removes all history/pending requests for a machine if it's being unlisted
+        const result = await HireMachine.deleteMany({ machineId });
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully deleted ${result.deletedCount} requests for this machine.`,
+            deletedCount: result.deletedCount
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error deleting requests by machine",
+            error: error.message
+        });
+    }
+};

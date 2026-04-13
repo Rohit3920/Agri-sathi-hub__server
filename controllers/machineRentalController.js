@@ -19,7 +19,7 @@ async function AddMachine(req, res) {
             availabilityStartDate,
             availabilityEndDate,
             machineOwner,
-            location // This contains state, city, latitude, longitude
+            location, // This contains state, city, latitude, longitude
         } = req.body;
 
         // 1. Extract and Validate coordinates from the nested location object
@@ -29,7 +29,8 @@ async function AddMachine(req, res) {
         if (isNaN(lat) || isNaN(lng)) {
             return res.status(400).json({
                 success: false,
-                message: "Valid machine location coordinates (Latitude and Longitude) are required."
+                message:
+                    "Valid machine location coordinates (Latitude and Longitude) are required.",
             });
         }
 
@@ -54,22 +55,21 @@ async function AddMachine(req, res) {
                 country: location.country || "INDIA",
                 geo: {
                     type: "Point",
-                    coordinates: [lng, lat] // [Longitude, Latitude]
-                }
-            }
+                    coordinates: [lng, lat], // [Longitude, Latitude]
+                },
+            },
         });
 
         res.status(201).json({
             success: true,
             message: "Machine added successfully 🚜",
-            data: newMachine
+            data: newMachine,
         });
-
     } catch (error) {
         console.error("AddMachine Error:", error);
         res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message,
         });
     }
 }
@@ -81,7 +81,9 @@ async function RentMachine(req, res) {
 
         const machine = await machineRental.findById(machineId);
         if (!machine)
-            return res.status(404).json({ success: false, message: "Machine not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Machine not found" });
 
         if (machine.machineStatus !== "available") {
             return res
@@ -96,7 +98,9 @@ async function RentMachine(req, res) {
         // Ensure rentalHours is a number for multiplication
         const hours = Number(rentalHours);
         if (isNaN(hours) || hours <= 0) {
-            return res.status(400).json({ success: false, message: "Invalid rentalHours provided." });
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid rentalHours provided." });
         }
 
         const totalPrice = price * hours;
@@ -125,7 +129,7 @@ async function RentMachine(req, res) {
         console.error("Error in RentMachine:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 3. Update rental status (e.g., available, under_maintenance)
 async function UpdateRentalStatus(req, res) {
@@ -134,7 +138,9 @@ async function UpdateRentalStatus(req, res) {
 
         const machine = await machineRental.findById(machineId);
         if (!machine)
-            return res.status(404).json({ success: false, message: "Machine not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Machine not found" });
 
         machine.machineStatus = status;
         await machine.save();
@@ -148,7 +154,7 @@ async function UpdateRentalStatus(req, res) {
         console.error("Error in UpdateRentalStatus:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 4. Update machine details
 async function UpdateMachineDetails(req, res) {
@@ -159,11 +165,13 @@ async function UpdateMachineDetails(req, res) {
         const updatedMachine = await machineRental.findByIdAndUpdate(
             machineId,
             { $set: updates },
-            { new: true, runValidators: true }
+            { new: true, runValidators: true },
         );
 
         if (!updatedMachine)
-            return res.status(404).json({ success: false, message: "Machine not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Machine not found" });
 
         res.status(200).json({
             success: true,
@@ -174,7 +182,7 @@ async function UpdateMachineDetails(req, res) {
         console.error("Error in UpdateMachineDetails:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 5. Remove machine
 async function RemoveMachine(req, res) {
@@ -184,7 +192,9 @@ async function RemoveMachine(req, res) {
         const removedMachine = await machineRental.findByIdAndDelete(machineId);
 
         if (!removedMachine)
-            return res.status(404).json({ success: false, message: "Machine not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Machine not found" });
 
         res.status(200).json({
             success: true,
@@ -195,12 +205,14 @@ async function RemoveMachine(req, res) {
         console.error("Error in RemoveMachine:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 6. List all machines
 async function ListMachines(req, res) {
     try {
-        const machines = await machineRental.find().populate("machineOwner", "username email MobileNum address");
+        const machines = await machineRental
+            .find()
+            .populate("machineOwner", "username email MobileNum address");
         res.status(200).json({
             success: true,
             count: machines.length,
@@ -210,12 +222,13 @@ async function ListMachines(req, res) {
         console.error("Error in ListMachines:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 7. Get rental history (for now, lists rented machines)
 async function GetRentalHistory(req, res) {
     try {
-        const rentedMachines = await machineRental.find({ machineStatus: "rented" })
+        const rentedMachines = await machineRental
+            .find({ machineStatus: "rented" })
             .populate("machineOwner", "username email MobileNum address");
 
         res.status(200).json({
@@ -227,12 +240,13 @@ async function GetRentalHistory(req, res) {
         console.error("Error in GetRentalHistory:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 8. Get all available machines
 async function GetAvailableMachines(req, res) {
     try {
-        const availableMachines = await machineRental.find({ machineStatus: "available" })
+        const availableMachines = await machineRental
+            .find({ machineStatus: "available" })
             .populate("machineOwner", "username email MobileNum address");
 
         res.status(200).json({
@@ -244,7 +258,7 @@ async function GetAvailableMachines(req, res) {
         console.error("Error in GetAvailableMachines:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 9. Get machines by userId (machines owned by a specific user)
 async function GetMachineByUserId(req, res) {
@@ -258,23 +272,27 @@ async function GetMachineByUserId(req, res) {
         console.error("Error in GetMachineByUserId:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 // 10. Get machine by ID
 async function GetMachineById(req, res) {
     try {
         const { machineId } = req.params;
 
-        const machine = await machineRental.findById(machineId).populate("machineOwner");
+        const machine = await machineRental
+            .findById(machineId)
+            .populate("machineOwner");
         if (!machine)
-            return res.status(404).json({ success: false, message: "Machine not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Machine not found" });
 
         res.status(200).json({ success: true, data: machine });
     } catch (error) {
         console.error("Error in GetMachineById:", error);
         res.status(500).json({ success: false, message: error.message });
     }
-};
+}
 
 module.exports = {
     AddMachine,

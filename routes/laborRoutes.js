@@ -11,7 +11,10 @@ const {
     getHireById,
     updateHireStatus,
     getGroupById,
-    getWorkerById
+    getWorkerById,
+    deleteWorkerProfile,
+    deleteWorkerGroup,
+    updateWorkerGroup
 } = require("../controllers/laborController");
 
 /* WORKER PROFILE */
@@ -32,5 +35,12 @@ router.get("/hire/:id", getHireById);
 router.post("/hire", createHireRequest);
 router.get("/hire", getHireRequests);
 router.put("/hire/:id/status", updateHireStatus);
+
+/* DELETE OPERATIONS */
+router.delete("/delete-worker/:id", deleteWorkerProfile);
+router.delete("/delete-group/:id", deleteWorkerGroup);
+
+/* UPDATE OPERATIONS */
+router.put("/worker-group/:id", updateWorkerGroup);
 
 module.exports = router;

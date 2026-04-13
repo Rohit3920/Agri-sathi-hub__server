@@ -210,3 +210,58 @@ exports.updateHireStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Delete Worker Profile
+// @route   DELETE /api/labor/delete-worker/:id
+exports.deleteWorkerProfile = async (req, res) => {
+    try {
+        const worker = await WorkerProfile.findById(req.params.id);
+        if (!worker) {
+            return res.status(404).json({ message: "Worker profile not found" });
+        }
+
+        // Use findByIdAndDelete to remove the document
+        await WorkerProfile.findByIdAndDelete(req.params.id);
+        
+        res.status(200).json({ message: "Worker profile deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete Worker Group
+// @route   DELETE /api/labor/delete-group/:id
+exports.deleteWorkerGroup = async (req, res) => {
+    try {
+        const group = await WorkerGroup.findById(req.params.id);
+        if (!group) {
+            return res.status(404).json({ message: "Worker group not found" });
+        }
+
+        await WorkerGroup.findByIdAndDelete(req.params.id);
+        
+        res.status(200).json({ message: "Worker group deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update Worker Group Details
+// @route   PUT /api/labor/worker-group/:id
+exports.updateWorkerGroup = async (req, res) => {
+    try {
+        const updatedGroup = await WorkerGroup.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedGroup) {
+            return res.status(404).json({ message: "Group not found" });
+        }
+
+        res.status(200).json(updatedGroup);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
