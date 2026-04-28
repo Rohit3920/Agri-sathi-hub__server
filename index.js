@@ -43,6 +43,7 @@ const govSchmRoutes = require("./routes/govSchmRoutes")
 const weatherRoutes = require('./routes/weatherRoutes');
 const cropRoutes = require('./routes/cropRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 // const searchRoutes = require('./routes/searchRoutes');
 
 app.use('/api/auth', authRoutes);
@@ -56,6 +57,7 @@ app.use('/api/gov-scheme', govSchmRoutes)
 app.use('/api/weather', weatherRoutes);
 app.use("/api/crops", cropRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/feedback', feedbackRoutes);
 // app.use('/api/search', searchRoutes)
 
 io.on('connection', (socket) => {
