@@ -41,8 +41,8 @@ exports.predictBestCrops = async (req, res) => {
             else if (Math.abs(phLevel - soil.phLevel) <= 1.5) score += 5;
 
             // Soil Type (Max 10)
-            const typeMatch = Array.isArray(soil.soilType) 
-                ? soil.soilType.includes(soilType) 
+            const typeMatch = Array.isArray(soil.soilType)
+                ? soil.soilType.includes(soilType)
                 : soil.soilType === soilType;
             if (typeMatch) score += 10;
 
@@ -226,7 +226,7 @@ exports.checkCropHealth = async (req, res) => {
         }
 
         res.json({
-            status: issues.length ? "under risk only" : "Healthy",
+            status: issues.length == 1 ? "under risk only" : issues.length > 1 ? "under multiple risks" : "Healthy",
             issues
         });
 

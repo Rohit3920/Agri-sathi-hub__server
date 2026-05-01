@@ -37,7 +37,7 @@ router.get("/hire", getHireRequests);
 router.put("/hire/:id/status", updateHireStatus);
 
 /* DELETE OPERATIONS */
-router.delete("/delete-worker/:id", deleteWorkerProfile);
+router.delete("/delete-single-worker/:id", deleteWorkerProfile);
 router.delete("/delete-group/:id", deleteWorkerGroup);
 
 /* UPDATE OPERATIONS */

@@ -222,7 +222,6 @@ exports.deleteWorkerProfile = async (req, res) => {
 
         // Use findByIdAndDelete to remove the document
         await WorkerProfile.findByIdAndDelete(req.params.id);
-        
         res.status(200).json({ message: "Worker profile deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -239,7 +238,7 @@ exports.deleteWorkerGroup = async (req, res) => {
         }
 
         await WorkerGroup.findByIdAndDelete(req.params.id);
-        
+
         res.status(200).json({ message: "Worker group deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });

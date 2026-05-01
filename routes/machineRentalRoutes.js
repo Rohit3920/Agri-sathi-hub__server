@@ -42,7 +42,7 @@ router.get("/get-machine-by-id/:machineId", GetMachineById);
 
 // General hire routes
 router.post("/request", requestRental);
-router.delete("/delete/:id", deleteRental);
+router.delete("/delete-machine-booking/:id", deleteRental);
 
 // Status Management
 router.patch("/status/:id", updateRentalStatus);
