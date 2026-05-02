@@ -128,7 +128,27 @@ exports.getGroupById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// GET/worker-group/worker/:workerId"
+exports.getWorkerGroupsByLeaderId = async (req, res) => {
+    try {
+        const workerGroups = await WorkerGroup.find({ leaderId: req.params.leaderId })
+            .populate("leaderId", "username email MobileNum profilePicture address");
+        res.status(200).json(workerGroups);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
+// GET/single-worker/worker/:workerId"
+exports.getHireWorkerByUserId = async (req, res) => {
+    try {
+        const worker = await WorkerProfile.find({ userId: req.params.userId })
+            .populate("userId", "username email MobileNum profilePicture address");
+        res.status(200).json(worker);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 // create hire request (farmer)
 exports.createHireRequest = async (req, res) => {
@@ -260,6 +280,93 @@ exports.updateWorkerGroup = async (req, res) => {
         }
 
         res.status(200).json(updatedGroup);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    hire Worker  Details
+// @route   GET /api/labor/worker-by-farmer/:famrmerId
+exports.getWorkerByFarmerId = async (req, res) => {
+    try {
+        const worker = await Hire.find({ farmerId: req.params.farmerId })
+            .populate("workerId", "username email MobileNum profilePicture address")
+            .populate("groupId", "groupName members");
+        console.log(worker);
+        if (!worker) {
+            return res.status(404).json({ message: "Worker not found for this farmer" });
+        }
+
+        res.status(200).json(worker);
+    } catch (error) {
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+// GET /worker/worker-group/:farmerId
+exports.getHireWorkerGroupsByFarmerId = async (req, res) => {
+    try {
+        const workerGroups = await Hire.find({ farmerId: req.params.farmerId, groupId: { $ne: null } })
+            .populate("groupId", "groupName members")
+            .populate("farmerId", "username MobileNum")
+            .sort({ createdAt: -1 });;
+        res.status(200).json({ success: true, data: workerGroups });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /worker/farmer/:farmerId
+exports.getHireWorkerByFarmerId = async (req, res) => {
+    try {
+        const workers = await Hire.find({ farmerId: req.params.farmerId })
+            .populate("workerId", "username email MobileNum profilePicture address")
+            .sort({ createdAt: -1 });
+            // .populate("groupId", "groupName members");
+        res.status(200).json({ success: true, data: workers });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/labor/worker-group-hire/worker/:userId
+exports.getHireWorkerGroupsByWorkerId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // 1. Find all hire records where this worker is the main contact
+        // OR where the record has a groupId (we filter more in frontend or add complex logic here)
+        const workerGroups = await Hire.find({
+            $or: [
+                { workerId: userId },
+                // If your Hire schema stores a group reference, we find those
+                { groupId: { $ne: null } }
+            ]
+        })
+        .populate("groupId")
+        .populate("farmerId", "username MobileNum")
+        .sort({ createdAt: -1 });
+
+        // Note: If you want to only show groups this SPECIFIC user belongs to,
+        // you'd need to cross-reference the WorkerGroup members list.
+        res.status(200).json({ success: true, data: workerGroups });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /worker/worker/:workerId
+exports.getHireWorkerById = async (req, res) => {
+    try {
+        const worker = await Hire.find( { workerId: req.params.workerId } )
+            .populate("workerId", "username email MobileNum profilePicture address")
+            .populate("farmerId", "username MobileNum")
+            .sort({ createdAt: -1 });;
+        res.status(200).json({ success: true, data: worker });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
